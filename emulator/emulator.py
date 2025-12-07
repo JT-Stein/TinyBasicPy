@@ -1,0 +1,216 @@
+import input_output
+import re
+import register
+
+verbose = False
+
+class File:
+  def __init__(self):
+    """The File class handles code file management for the compiler"""
+    self.file_name = ""
+
+  def clear_lines(self, lines_list):
+    """Removes line end characters, etc. from the lines of a file"""
+    self.lines_list = lines_list
+    self.lines_clean_list = []
+
+    for line in self.lines_list:
+      self.line_clean = line.replace("\n", "")
+      self.lines_clean_list.append(self.line_clean)
+
+    return self.lines_clean_list
+
+
+  def read_file(self, file):
+    """read_file reads the code into memory"""
+
+    self.file = file
+    self.file_name = file
+
+    self.file = open(file, "r")
+
+    # Converts the file data from a string to a list
+    self.read_file_data = list(self.file.readlines())
+    self.file.close()
+
+    self.read_file_data = list(self.read_file_data)
+    self.read_file_data = self.clear_lines(self.read_file_data)
+
+    return self.read_file_data
+
+class Tokenize:
+  def __init__(self, verbose=False):
+    """Tokenizes the source code"""
+    self.verbose = verbose
+    self.init_class = register.Initialize(verbose=self.verbose)
+
+  def variable_type_clean(self, source, var_type):
+    """Cleans the type label from the variable statement and returns a list of the variable names"""
+    self.source = source
+    self.var_type = var_type
+
+    # Removes the variable type label as that has already been identified, any present spaces and commas
+    self.variable_names = self.source.split(f"{self.var_type} ")[1]
+    self.variable_names = self.variable_names.replace(" ", "")
+    self.variable_names = self.variable_names.split(",")
+
+    return self.variable_names
+
+  def code_generate(self, source):
+    self.source = source
+
+    if self.verbose:
+      print(f"\nemulator.py Tokenize.code_generate(): {self.source}")
+
+    elif "PRINT" in self.source:
+      self.print_output = self.source.split("PRINT ")[1]
+      # Determines if the item to be printed is a string or a variable reference
+
+      if "'" in self.print_output or '"' in self.print_output:
+        if "'" in self.print_output:
+          self.string_to_print = re.findall(r"'(.*?)'", self.print_output)[0]
+
+        elif '"' in self.print_output:
+          self.string_to_print = re.findall(r'"(.*?)"', self.print_output)[0]
+ 
+        # Identify is set to False because the value being printed is known
+        input_output.io_print(self.string_to_print, identify=False)
+
+      else:
+        # Identify is set to false because the emulator needs to identify what it is printing
+        input_output.io_print(self.source, identify=True)
+
+    # This determines if a single variable or multiple variables is being initialzied
+    if "INTEGER" in self.source or "CHAR" in self.source or "WORD" in self.source or "LONG" in self.source or "FLOAT" in self.source or "BYTE" in self.source:
+      if self.verbose:
+        print("\nA variable is being initialized")
+      if "," not in self.source:
+        if self.verbose:
+          print("\nemulator.py Tokenize.code_generate() a single variable is being initialized")
+        if "INTEGER" in self.source:
+          # Finds the name of the variable and places it in the integer regsiter
+          if self.verbose:
+            print(f"\nemulator.py Tokenize.code_generate() INTEGER initializing...")
+
+          self.integer_var_name = self.source.split("INTEGER ")[1]
+          self.init_class.init_integer(self.integer_var_name)
+
+        elif "CHAR" in self.source:
+          # Finds the name of the variable and places it in the character register
+          if self.verbose:
+            print(f"\nemulator.py Tokenize.code_generate() CHAR initializing...")
+          self.char_var_name = self.source.split("CHAR ")[1]
+          self.init_class.init_char(self.char_var_name)
+
+        elif "WORD" in self.source:
+          # Finds the name of the variable and places it in the word register
+          if self.verbose:
+            print(f"\nemulator.py Tokenize.code_generate() WORD initializing...")
+          self.word_var_name = self.source.split("WORD ")[1]
+          self.init_class.init_word(self.word_var_name)
+
+        elif "LONG" in self.source:
+          # Finds the name of the variable and places it in the long register
+          if self.verbose:
+            print(f"\nemulator.py Tokenize.code_generate() LONG initializing...")
+          self.long_var_name = self.source.split("LONG ")[1]
+          self.init_class.init_long(self.long_var_name)
+
+        elif "FLOAT" in self.source:
+          # Finds the name of the variable and places it in the float register
+          if self.verbose:
+            print(f"\nemulator.py Tokenize.code_generate() FLOAT initializing...")
+          self.float_var_name = self.source.split("FLOAT ")[1]
+          self.init_class.init_float(self.float_var_name)
+
+        elif "BYTE" in self.source:
+          # Finds the name of the variable and places it in the byte register
+          if self.verbose:
+            print(f"\nemulator.py Tokenize.code_generate() BYTE initializing...")
+          self.byte_var_name = self.source.split("BYTE ")[1]
+          self.init_class.init_byte(self.byte_var_name)
+
+      elif "," in self.source: 
+        self.variable_type = self.source.split(" ")[0]
+        if self.variable_type == "INTEGER":
+          self.variable_names = self.variable_type_clean(self.source, "INTEGER")
+    
+          # Loops through the variable names and places them in integer memory
+          for self.variable_name in self.variable_names:
+            self.init_class.init_integer(self.variable_name)
+
+        elif self.variable_type == "CHAR":
+          self.variable_names = self.variable_type_clean(self.source, "CHAR")
+
+          # Loops through the variable names and places them in char memory
+          for self.variable_name in self.variable_names:
+            self.init_class.init_char(self.variable_name)
+
+        elif self.variable_type == "WORD":
+          self.variable_names = self.variable_type_clean(self.source, "WORD")
+
+          # Loops through the variable names and places them in word memory
+          for self.variable_name in self.variable_names:
+            self.init_class.init_word(self.variable_name)
+        
+        elif self.variable_type == "LONG":
+          self.variable_names = self.variable_type_clean(self.source, "LONG")
+
+          # Loops through the variable names and places them in long memory
+          for self.variable_name in self.variable_names:
+            self.init_class.init_word(self.variable_name)
+
+        elif self.variable_type == "FLOAT":
+          self.variable_names = self.variable_type_clean(self.source, "FLOAT")
+
+          # Loops through the variable names and places them in float memory
+          for self.variable_name in self.variable_names:
+            self.init_class.init_float(self.variable_name)
+
+        elif self.variable_type == "BYTE":
+          self.variable_names = self.variable_type_clean(self.source, "BYTE")
+
+          # Loops through the variable names and places them in byte memory
+          for self.variable_name in self.variable_names:
+            self.init_class.init_byte(self.variable_name)
+
+    elif " = " in self.source:
+      # Assumes the form A = 0, for example
+      self.variable_name = self.source.split(" = ")[0]
+      self.variable_value = self.source.split(" = ")[1]
+
+      if self.variable_name in register.integers_dict.keys():
+        register.integers_dict[self.variable_name] = self.variable_value
+        if self.verbose:
+          print(f"\nemulator.py Tokenize.code_generate() registers.integers_dict: {register.integers_dict}")
+
+      elif self.variable_name in register.chars_dict.keys():
+        register.chars_dict[self.variable_name] = self.variable_value
+        if self.verbose:
+          print(f"\nemulator.py Tokenize.code_generate() registers.chars_dict: {register.chars_dict}")
+
+      elif self.variable_name in register.words_dict.keys():
+        register.words_dict[self.variable_name] = self.variable_value
+        if self.verbose:
+          print(f"\nemulator.py Tokenize.code_generate() register.words_dict: {register.words_dict}")
+
+      elif self.variable_name in register.longs_dict.keys():
+        register.longs_dict[self.variable_name] = self.variable_value
+        if self.verbose:
+          print(f"\nemulator.py Tokenize.code_generate() register.words_dict: {register.longs_dict}")
+
+
+file_load = File()
+user_code = file_load.read_file("test.bas")
+
+if verbose:
+  print(f"\nRead {file_load.file_name}: {user_code}")
+
+tokenizer = Tokenize(verbose=verbose)
+for line in user_code:
+  tokenizer.code_generate(line)
+
+
+
+
+
