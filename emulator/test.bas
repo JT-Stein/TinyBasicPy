@@ -4,11 +4,17 @@ INTEGER A
 INTEGER B
 
 PRINT 1 + 2
+
 PRINT 1 * 2 * 3
+
 PRINT bValue
 
 A = 3
 B = 4
-PRINT "Value of A + B:"
+PRINT A
+
 PRINT A + B
 
+PRINT DEG(20)
+
+IF DEG(20) < 0 THEN PRINT DEG(20)

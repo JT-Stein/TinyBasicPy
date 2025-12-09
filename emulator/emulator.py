@@ -1,5 +1,6 @@
 import input_output
 import re
+import calc
 import register
 
 verbose = False
@@ -62,7 +63,86 @@ class Tokenize:
     if self.verbose:
       print(f"\nemulator.py Tokenize.code_generate(): {self.source}")
 
-    elif "PRINT" in self.source:
+    if '"' not in self.source and "'" not in self.source:
+      # Replaces the variables in self.source with their values
+      for item in self.source.split(" "):
+        # Replaces variables only after they have been given values, NOT after they have been initialized
+        if item in register.integers_dict.keys() and register.integers_dict[item] != None:
+          self.source = self.source.replace(item, str(register.integers_dict[item]))
+
+      if "DEG(" in self.source:
+        # Splits the source code into every word, identifies where DEG is mentioned, and replaces DEG with the evaluated value
+        if self.verbose:
+          print("\nemulator.py Tokenize.code_generate() DEG detected")
+
+        self.calc_clean = calc.clean(self.source, "DEG")
+        self.int_value = self.calc_clean[0]
+        self.command_replace = self.calc_clean[1]
+
+        if self.verbose:
+          print(f"\nemulator.py Tokenize.code_generate() self.int_value: {self.int_value}")
+
+        self.degree_value = calc.deg(self.int_value)
+        self.source = self.source.replace(self.command_replace, str(self.degree_value))
+
+        if self.verbose:
+          print(self.source)
+
+        elif "RAD(" in self.source:
+          # Splits the source code into every word, identifies where RAD is mentioned, and replaces RAD with the evaluated value
+          if self.verbose:
+            print("\nemulator.py Tokenize.code_generate() RAD detected")
+          
+          self.calc_clean = calc.clean(self.source, "RAD")
+          self.int_value = self.calc_clean[0]
+          self.command_replace = self.calc_clean[1]
+
+          if self.verbose:
+            print(f"\nemulator.py Tokenize.code_generate() self.int_value: {self.int_value}")
+
+          self.rad_value = calc.rad(self.int_value)
+          self.source = self.source.replace(self.command_replace, str(self.rad_value))
+
+          if self.verbose:
+            print(self.source)
+
+        elif "SIN(" in self.source:
+          # Splits the source code into every word, identifies where SIN is mentioned, and replaces SIN with the evaluated value
+          if self.verbose:
+            print("\nemulator.py Tokenize.code_generate() SIN detected")
+
+          self.calc_clean = calc.clean(self.source, "SIN")
+          self.int_value = self.calc_clean[0]
+          self.command_replace = self.calc_clean[1]
+
+          if self.verbose:
+            print(f"\nemulator.py Tokenize.code_generate self.int_value: {self.int_value}")
+
+          self.sin_value = calc.sin(self.int_value)
+          self.source = self.source.replace(self.command_replace, str(self.rad_value))
+          
+    if "IF " in self.source:
+      # Replaces the variables in self.source with their values
+      for item in self.source.split(" "):
+        # Replaces variables only after they have been given values, NOT after they have been initialized
+        if item in register.integers_dict.keys() and register.integers_dict[item] != None:
+          self.source = self.source.replace(item, str(register.integers_dict[item]))
+
+      # Now that variables have been replaced with their values, the conditional can be evaluated
+      self.condition = self.source.split("IF ")[1].split(" THEN")[0]
+      if self.verbose:
+        print(f"\nemulator.py Tokenize.code_generate() self.condition: {self.condition}")
+      
+      if eval(self.condition):
+        # Replaces the source with the action and proceeds as normal iff the condition is satisfied
+        self.action = self.source.split("THEN ")[1]
+        self.source = self.action
+
+      elif not eval(self.condition):
+        # Replaces the source with empty code so that nothing executes
+        self.source = ""
+
+    if "PRINT" in self.source:
       self.print_output = self.source.split("PRINT ")[1]
       # Determines if the item to be printed is a string or a variable reference
 
@@ -71,6 +151,7 @@ class Tokenize:
           self.string_to_print = re.findall(r"'(.*?)'", self.print_output)[0]
 
         elif '"' in self.print_output:
+          print(self.source)
           self.string_to_print = re.findall(r'"(.*?)"', self.print_output)[0]
  
         # Identify is set to False because the value being printed is known
@@ -176,8 +257,16 @@ class Tokenize:
 
     elif " = " in self.source:
       # Assumes the form A = 0, for example
+      if self.verbose:
+        print("Variable is being assigned a value...")
+        print(self.source)
       self.variable_name = self.source.split(" = ")[0]
+      if self.verbose:
+        print(self.source.split("="))
+        print(f"emulator.py Tokenize.code_generate() self.variable_name: {self.variable_name}")
       self.variable_value = self.source.split(" = ")[1]
+      if self.verbose:
+        print(f"emulator.py Tokenize.code_generate() self.variable_value: {self.variable_value}")
 
       if self.variable_name in register.integers_dict.keys():
         register.integers_dict[self.variable_name] = self.variable_value
@@ -197,8 +286,12 @@ class Tokenize:
       elif self.variable_name in register.longs_dict.keys():
         register.longs_dict[self.variable_name] = self.variable_value
         if self.verbose:
-          print(f"\nemulator.py Tokenize.code_generate() register.words_dict: {register.longs_dict}")
+          print(f"\nemulator.py Tokenize.code_generate() register.longs_dict: {register.longs_dict}")
 
+      elif self.variable_name in register.bytes_dict.keys():
+        register.bytes_dict[self.variable_name] = self.variable_value
+        if self.verbose:
+          print(f"\nemulator.py Tokenize.code_generate() register.bytes_dict: {register.bytes_dict}")
 
 file_load = File()
 user_code = file_load.read_file("test.bas")
