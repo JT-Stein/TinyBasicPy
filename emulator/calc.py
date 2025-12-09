@@ -48,3 +48,11 @@ def log(number):
 def pow(base, exponent):
   # Returns base ^ exponent
   return base ^ exponent
+
+def abs(number):
+  # Returns the absolute value of the given number
+  if number >= 0:
+    return number
+
+  else:
+    return number * -1

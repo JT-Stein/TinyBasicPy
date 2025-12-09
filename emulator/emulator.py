@@ -1,7 +1,56 @@
 import input_output
 import re
 import calc
+import ast
+import system
 import register
+
+"""
+Implemented functions:
+
+CHAR
+BYTE
+WORD
+INTEGER
+LONG
+FLOAT
+
+LOAD
+STORE
+
+DO
+LOOP
+
+IF..THEN..
+
+DO..
+LOOP
+
+PRINT
+
+DEG()
+RAD()
+SIN()
+COST()
+TAN()
+ATN()
+SQR()
+EXP()
+LOG()
+POW()
+ABS()
+
+
+TIME
+.SECOND
+.MINUTE
+.HOUR
+
+DATE
+.DAY
+.MONTH
+.YEAR
+"""
 
 verbose = False
 
@@ -63,12 +112,74 @@ class Tokenize:
     if self.verbose:
       print(f"\nemulator.py Tokenize.code_generate(): {self.source}")
 
+    if self.source == "END":
+      # Quits the program and does not evaluate and following commands
+      if self.verbose:
+        print(f"\nemulator.py Tokenize.code_generate(): end")
+      quit()
+
+    # These all handle date and time-related commands
+    if "TIME" in self.source and "TIME." not in self.source:
+      self.source = self.source.replace("TIME", str(system.time()))
+    elif "TIME.SECOND" in self.source:
+      self.source = self.source.replace("TIME.SECOND", str(system.time_second()))
+    elif "TIME.MINUTE" in self.source:
+      self.source = self.source.replace("TIME.MINUTE", str(system.time_minute()))
+    elif "TIME.HOUR" in self.source:
+      self.source = self.source.replace("TIME.HOUR", str(system.time_hour()))
+
+    if "DATE" in self.source and "DATE." not in self.source:
+      self.source = self.source.replace("DATE", str(system.date()))
+    elif "DATE.DAY" in self.source:
+      self.source = self.source.replace("DATE.DAY", str(system.date_day()))
+    elif "DATE.MONTH" in self.source:
+      self.source = self.source.replace("DATE.MONTH", str(system.date_month()))
+    elif "DATE.YEAR" in self.source:
+      self.source = self.source.replace("DATE.YEAR", str(system.date_year()))
+
     if '"' not in self.source and "'" not in self.source:
       # Replaces the variables in self.source with their values
       for item in self.source.split(" "):
         # Replaces variables only after they have been given values, NOT after they have been initialized
+
         if item in register.integers_dict.keys() and register.integers_dict[item] != None:
           self.source = self.source.replace(item, str(register.integers_dict[item]))
+
+        elif item in register.chars_dict and register.chars_dict[item] != None:
+          self.source = self.source.replace(item, str(register.chars_dict[item]))
+
+        elif item in register.words_dict and register.words_dict[item] != None:
+          self.source = self.source.replace(item, str(register.chars_dict[item]))
+
+        elif item in register.longs_dict and register.longs_dict[item] != None:
+          self.source = self.source.replace(item, str(register.longs_dict[item]))
+
+        elif item in register.floats_dict and register.floats_dict[item] != None:
+          self.source = self.source.replace(item, str(register.floats_dict[item]))
+
+        elif item in register.bytes_dict and register.bytes_dict[item] != None:
+          self.source = self.source.replace(item, str(register.bytes_dict[item]))
+
+      for item in self.source.split(","):
+        # This allows variable values to be written to the flash memory. Fixed a problem where the variable name itself was being written
+
+        if item in register.integers_dict.keys() and register.integers_dict[item] != None:
+          self.source = self.source.replace(item, str(register.integers_dict[item]))
+        
+        elif item in register.chars_dict and register.chars_dict[item] != None:
+          self.source = self.source.replace(item, str(register.chars_dict[item]))
+
+        elif item in register.words_dict and register.words_dict[item] != None:
+          self.source = self.source.replace(item, str(register.words_dict[item]))
+
+        elif item in register.longs_dict and register.longs_dict[item] != None:
+          self.source = self.source.replace(item, str(regsiter.longs_dict[item]))
+
+        elif item in register.floats_dict and register.floats_dict[item] != None:
+          self.source = self.source.replace(item, str(register.floats_dict[item]))
+
+        elif item in register.bytes_dict and register.bytes_dict[item] != None:
+          self.source = self.source.replace(item, str(register.bytes_dict[item]))
 
       if "DEG(" in self.source:
         # Splits the source code into every word, identifies where DEG is mentioned, and replaces DEG with the evaluated value
@@ -88,39 +199,54 @@ class Tokenize:
         if self.verbose:
           print(self.source)
 
-        elif "RAD(" in self.source:
-          # Splits the source code into every word, identifies where RAD is mentioned, and replaces RAD with the evaluated value
-          if self.verbose:
-            print("\nemulator.py Tokenize.code_generate() RAD detected")
+      if "RAD(" in self.source:
+        # Splits the source code into every word, identifies where RAD is mentioned, and replaces RAD with the evaluated value
+        if self.verbose:
+          print("\nemulator.py Tokenize.code_generate() RAD detected")
           
-          self.calc_clean = calc.clean(self.source, "RAD")
-          self.int_value = self.calc_clean[0]
-          self.command_replace = self.calc_clean[1]
+        self.calc_clean = calc.clean(self.source, "RAD")
+        self.int_value = self.calc_clean[0]
+        self.command_replace = self.calc_clean[1]
 
-          if self.verbose:
-            print(f"\nemulator.py Tokenize.code_generate() self.int_value: {self.int_value}")
+        if self.verbose:
+          print(f"\nemulator.py Tokenize.code_generate() self.int_value: {self.int_value}")
 
-          self.rad_value = calc.rad(self.int_value)
-          self.source = self.source.replace(self.command_replace, str(self.rad_value))
+        self.rad_value = calc.rad(self.int_value)
+        self.source = self.source.replace(self.command_replace, str(self.rad_value))
 
-          if self.verbose:
-            print(self.source)
+        if self.verbose:
+          print(self.source)
 
-        elif "SIN(" in self.source:
-          # Splits the source code into every word, identifies where SIN is mentioned, and replaces SIN with the evaluated value
-          if self.verbose:
-            print("\nemulator.py Tokenize.code_generate() SIN detected")
+      if "SIN(" in self.source:
+        # Splits the source code into every word, identifies where SIN is mentioned, and replaces SIN with the evaluated value
+        if self.verbose:
+          print("\nemulator.py Tokenize.code_generate() SIN detected")
 
-          self.calc_clean = calc.clean(self.source, "SIN")
-          self.int_value = self.calc_clean[0]
-          self.command_replace = self.calc_clean[1]
+        self.calc_clean = calc.clean(self.source, "SIN")
+        self.int_value = self.calc_clean[0]
+        self.command_replace = self.calc_clean[1]
 
-          if self.verbose:
-            print(f"\nemulator.py Tokenize.code_generate self.int_value: {self.int_value}")
+        if self.verbose:
+          print(f"\nemulator.py Tokenize.code_generate self.int_value: {self.int_value}")
 
-          self.sin_value = calc.sin(self.int_value)
-          self.source = self.source.replace(self.command_replace, str(self.rad_value))
-          
+        self.sin_value = calc.sin(self.int_value)
+        self.source = self.source.replace(self.command_replace, str(self.rad_value))
+
+      if "ABS(" in self.source:
+        # Splits the source code into every word, identifies where ABS is mentioned, and replaces ABS with the evaluated value
+        if self.verbose:
+          print(f"\nemulator.py Tokenize.code_generate() ABS detected")
+
+        self.calc_clean = calc.clean(self.source, "ABS")
+        self.int_value = self.calc_clean[0]
+        self.command_replace = self.calc_clean[1]
+
+        if self.verbose:
+          print(f"\nemulator.py Tokenize.code_generate self.int_value: {self.int_value}")
+
+        self.abs_value = calc.abs(self.int_value)
+        self.source = self.source.replace(self.command_replace, str(self.abs_value))
+
     if "IF " in self.source:
       # Replaces the variables in self.source with their values
       for item in self.source.split(" "):
@@ -151,7 +277,6 @@ class Tokenize:
           self.string_to_print = re.findall(r"'(.*?)'", self.print_output)[0]
 
         elif '"' in self.print_output:
-          print(self.source)
           self.string_to_print = re.findall(r'"(.*?)"', self.print_output)[0]
  
         # Identify is set to False because the value being printed is known
@@ -293,16 +418,77 @@ class Tokenize:
         if self.verbose:
           print(f"\nemulator.py Tokenize.code_generate() register.bytes_dict: {register.bytes_dict}")
 
+    if "STORE " in self.source:
+      self.store_address = self.source.split("STORE ")[1].split(",")[0]
+      self.variables = self.source.split("STORE ")[1].replace(" ", "").split(",")[1:]
+
+      print(self.variables)
+
+      # Writes to the memory as $F000: 1,2,3, for example
+      self.flash_file = open("flash_memory.txt", "w")
+      self.flash_file.write(f"{str(self.store_address)}: {str(self.variables)}")
+
+      self.flash_file.close()
+
+    elif "LOAD " in self.source:
+      self.load_address = self.source.split("LOAD ")[1].split(",")[0]
+      self.load_variables = self.source.split("LOAD ")[1].split(",")[1:]
+
+      print(self.load_variables)
+
+      # Reads from the memory as $F000, for example
+      self.flash_file = open("flash_memory.txt", "r")
+      self.flash_data = self.flash_file.readlines()
+
+      self.flash_file.close()
+
+      # This code finds the line that contains the address being loaded. It loads the variables into memory using the aliases the user has provided. However, they are stored in memory as their actual values without reference to their name(s)
+      for line in self.flash_data:
+        if self.load_address in line:
+          self.read_variables = line.split(": ")[1]
+
+          # self.read_variables is read from the file as a string. ast converts this to a Python list
+          self.read_variables = ast.literal_eval(self.read_variables)
+
+          num = 0
+          for item in self.load_variables:
+            if item in register.integers_dict.keys():
+              register.integers_dict[item] = self.read_variables[num]
+
+            num += 1
+
+
 file_load = File()
-user_code = file_load.read_file("test.bas")
+user_code = file_load.read_file("date_time_test.bas")
 
 if verbose:
   print(f"\nRead {file_load.file_name}: {user_code}")
 
 tokenizer = Tokenize(verbose=verbose)
-for line in user_code:
-  tokenizer.code_generate(line)
 
+loop_code = []
+loop_run = False
+loop_write = False
+ 
+for line in user_code:
+  if not loop_write and not loop_run:
+    tokenizer.code_generate(line)
+
+  if loop_write:
+    if line != "LOOP":
+      loop_code.append(line)
+
+    if line == "LOOP":
+      loop_write = False
+      loop_run = True
+
+  if line == "DO" and not loop_write:
+    loop_write = True
+
+  if loop_run:
+    while True:
+      for line in loop_code:
+        tokenizer.code_generate(line)
 
 
 
