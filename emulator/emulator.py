@@ -26,6 +26,9 @@ IF..THEN..
 DO..
 LOOP
 
+FOR..
+NEXT
+
 PRINT
 
 DEG()
@@ -459,36 +462,76 @@ class Tokenize:
 
 
 file_load = File()
-user_code = file_load.read_file("date_time_test.bas")
+user_code = file_load.read_file("loop_test.bas")
 
 if verbose:
   print(f"\nRead {file_load.file_name}: {user_code}")
 
 tokenizer = Tokenize(verbose=verbose)
 
-loop_code = []
-loop_run = False
-loop_write = False
+while_loop_code = []
+while_loop_run = False
+while_loop_write = False
+
+for_loop_code = []
+for_loop_runs = 0
+for_loop_run = False
+for_loop_write = False
  
 for line in user_code:
-  if not loop_write and not loop_run:
+  if for_loop_write:
+    if line != "NEXT":
+      for_loop_code.append(line)
+
+    if line == "NEXT":
+      for_loop_write = False
+      for_loop_run = True
+
+  if "FOR " in line:
+    for_loop_write = True
+
+    # Extracts when the for loop should stop
+    for_loop_runs = int(line.split(" = ")[1].split(" TO ")[1])
+
+    # This extracts the variable that the loop is stepping by, what its initial value is, and initializes it in the register
+    step_info = line.split("FOR ")[1].split(" TO")[0].split(" = ")
+    step_variable = step_info[0]
+    step_start = int(step_info[1])
+  
+    # Adds the defined step variable into the register as an int
+    register.integers_dict[step_variable] = step_start
+
+  if for_loop_run:
+    for x in range(for_loop_runs - step_start):
+      for line in for_loop_code:
+        tokenizer.code_generate(line)
+
+      register.integers_dict[step_variable] += 1
+
+    for_loop_code = []
+    for_loop_runs = 0
+    for_loop_run = False
+    for_loop_write = False
+
+  if not while_loop_write and not while_loop_run and not for_loop_write and not for_loop_run:
     tokenizer.code_generate(line)
 
-  if loop_write:
+  if while_loop_write:
     if line != "LOOP":
-      loop_code.append(line)
+      while_loop_code.append(line)
 
     if line == "LOOP":
-      loop_write = False
-      loop_run = True
+      while_loop_write = False
+      while_loop_run = True
 
-  if line == "DO" and not loop_write:
-    loop_write = True
+  if line == "DO" and not while_loop_write:
+    while_loop_write = True
 
-  if loop_run:
+  if while_loop_run:
     while True:
-      for line in loop_code:
+      for line in while_loop_code:
         tokenizer.code_generate(line)
+
 
 
 

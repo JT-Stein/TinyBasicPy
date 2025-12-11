@@ -4,7 +4,6 @@ INTEGER B
 A = 1
 B = 2
 
-DO
-PRINT A
-PRINT B
-LOOP
+FOR i = 2 TO 10
+PRINT i
+NEXT
