@@ -31,6 +31,8 @@ NEXT
 
 PRINT
 
+INPUT
+
 DEG()
 RAD()
 SIN()
@@ -55,7 +57,7 @@ DATE
 .YEAR
 """
 
-verbose = False
+verbose = True
 
 class File:
   def __init__(self):
@@ -152,7 +154,7 @@ class Tokenize:
           self.source = self.source.replace(item, str(register.chars_dict[item]))
 
         elif item in register.words_dict and register.words_dict[item] != None:
-          self.source = self.source.replace(item, str(register.chars_dict[item]))
+          self.source = self.source.replace(item, str(register.words_dict[item]))
 
         elif item in register.longs_dict and register.longs_dict[item] != None:
           self.source = self.source.replace(item, str(register.longs_dict[item]))
@@ -250,12 +252,36 @@ class Tokenize:
         self.abs_value = calc.abs(self.int_value)
         self.source = self.source.replace(self.command_replace, str(self.abs_value))
 
-    if "IF " in self.source:
+    if "INPUT " in self.source:
+      # Finds the text shown to the user and the variable the user input will be stored in
+      self.input_text = self.source.split("INPUT ")[1].split(", ")[0]
+      self.input_variable = self.source.split("INPUT ")[1].split(", ")[1]
+
+      self.user_input = input_output.io_input(self.input_text)
+      register.words_dict[self.input_variable] = self.user_input
+
+    elif "IF " in self.source:
       # Replaces the variables in self.source with their values
       for item in self.source.split(" "):
         # Replaces variables only after they have been given values, NOT after they have been initialized
         if item in register.integers_dict.keys() and register.integers_dict[item] != None:
           self.source = self.source.replace(item, str(register.integers_dict[item]))
+
+        elif item in register.chars_dict.keys() and register.chars_dict[item] != None:
+          self.source = self.source.replace(item, str(register.chars_dict[item]))
+
+        elif item in register.words_dict.keys() and register.words_dict[item] != None:
+          # These quotes are inserted so that the conditional will properly execute. A == A != "A" == "A". A == A will not execute in the eval() function
+          self.source = self.source.replace(item, str('"' + register.words_dict[item]) + '"')
+
+        elif item in register.longs_dict.keys() and register.longs_dict[item] != None:
+          self.source = self.source.replace(item, str(register.longs_dict[item]))
+
+        elif item in register.floats_dict.keys() and register.floats_dict[item] != None:
+          self.source = self.source.replace(item, str(register.floats_dict[item]))
+
+        elif item in register.bytes_dict.keys() and register.bytes_dict[item] != None:
+          self.source = self.source.replace(item, str(register.bytes_dict[item]))
 
       # Now that variables have been replaced with their values, the conditional can be evaluated
       self.condition = self.source.split("IF ")[1].split(" THEN")[0]
@@ -263,6 +289,7 @@ class Tokenize:
         print(f"\nemulator.py Tokenize.code_generate() self.condition: {self.condition}")
       
       if eval(self.condition):
+        print(eval(self.condition))
         # Replaces the source with the action and proceeds as normal iff the condition is satisfied
         self.action = self.source.split("THEN ")[1]
         self.source = self.action
@@ -271,7 +298,7 @@ class Tokenize:
         # Replaces the source with empty code so that nothing executes
         self.source = ""
 
-    if "PRINT" in self.source:
+    elif "PRINT" in self.source:
       self.print_output = self.source.split("PRINT ")[1]
       # Determines if the item to be printed is a string or a variable reference
 
@@ -462,7 +489,7 @@ class Tokenize:
 
 
 file_load = File()
-user_code = file_load.read_file("loop_test.bas")
+user_code = file_load.read_file("io_test.bas")
 
 if verbose:
   print(f"\nRead {file_load.file_name}: {user_code}")
@@ -491,6 +518,9 @@ for line in user_code:
     for_loop_write = True
 
     # Extracts when the for loop should stop
+    if verbose:
+      print(f'emulator.py for line in user_code line.split(" = ")[1]: {line.split(" = ")[1]}')
+      print(f'emulator.py for line in user_code line.split(" = ")[1].split(" TO "): {line.split(" = ")[1].split(" TO ")})')
     for_loop_runs = int(line.split(" = ")[1].split(" TO ")[1])
 
     # This extracts the variable that the loop is stepping by, what its initial value is, and initializes it in the register

@@ -35,4 +35,8 @@ def io_print(string, identify=False):
     else:
       print(print_statement)
 
+def io_input(input_text):
+  user_input = input(input_text)
+
+  return user_input
 
