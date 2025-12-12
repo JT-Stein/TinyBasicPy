@@ -57,7 +57,7 @@ DATE
 .YEAR
 """
 
-verbose = True
+verbose = False
 
 class File:
   def __init__(self):
@@ -124,13 +124,13 @@ class Tokenize:
       quit()
 
     # These all handle date and time-related commands
-    if "TIME" in self.source and "TIME." not in self.source:
+    if " TIME " in self.source and "TIME." not in self.source:
       self.source = self.source.replace("TIME", str(system.time()))
-    elif "TIME.SECOND" in self.source:
+    elif " TIME.SECOND " in self.source:
       self.source = self.source.replace("TIME.SECOND", str(system.time_second()))
-    elif "TIME.MINUTE" in self.source:
+    elif " TIME.MINUTE " in self.source:
       self.source = self.source.replace("TIME.MINUTE", str(system.time_minute()))
-    elif "TIME.HOUR" in self.source:
+    elif " TIME.HOUR " in self.source:
       self.source = self.source.replace("TIME.HOUR", str(system.time_hour()))
 
     if "DATE" in self.source and "DATE." not in self.source:
@@ -142,115 +142,114 @@ class Tokenize:
     elif "DATE.YEAR" in self.source:
       self.source = self.source.replace("DATE.YEAR", str(system.date_year()))
 
-    if '"' not in self.source and "'" not in self.source:
-      # Replaces the variables in self.source with their values
-      for item in self.source.split(" "):
-        # Replaces variables only after they have been given values, NOT after they have been initialized
+    # Replaces the variables in self.source with their values
+    for item in self.source.split(" "):
+      # Replaces variables only after they have been given values, NOT after they have been initialized
 
-        if item in register.integers_dict.keys() and register.integers_dict[item] != None:
-          self.source = self.source.replace(item, str(register.integers_dict[item]))
+      if item in register.integers_dict.keys() and register.integers_dict[item] != None:
+        self.source = self.source.replace(item, str(register.integers_dict[item]))
 
-        elif item in register.chars_dict and register.chars_dict[item] != None:
-          self.source = self.source.replace(item, str(register.chars_dict[item]))
+      elif item in register.chars_dict and register.chars_dict[item] != None:
+        self.source = self.source.replace(item, str(register.chars_dict[item]))
 
-        elif item in register.words_dict and register.words_dict[item] != None:
-          self.source = self.source.replace(item, str(register.words_dict[item]))
+      elif item in register.words_dict and register.words_dict[item] != None:
+        self.source = self.source.replace(item, str(register.words_dict[item]))
 
-        elif item in register.longs_dict and register.longs_dict[item] != None:
-          self.source = self.source.replace(item, str(register.longs_dict[item]))
+      elif item in register.longs_dict and register.longs_dict[item] != None:
+        self.source = self.source.replace(item, str(register.longs_dict[item]))
 
-        elif item in register.floats_dict and register.floats_dict[item] != None:
-          self.source = self.source.replace(item, str(register.floats_dict[item]))
+      elif item in register.floats_dict and register.floats_dict[item] != None:
+        self.source = self.source.replace(item, str(register.floats_dict[item]))
 
-        elif item in register.bytes_dict and register.bytes_dict[item] != None:
-          self.source = self.source.replace(item, str(register.bytes_dict[item]))
+      elif item in register.bytes_dict and register.bytes_dict[item] != None:
+        self.source = self.source.replace(item, str(register.bytes_dict[item]))
 
-      for item in self.source.split(","):
-        # This allows variable values to be written to the flash memory. Fixed a problem where the variable name itself was being written
+    for item in self.source.split(","):
+      # This allows variable values to be written to the flash memory. Fixed a problem where the variable name itself was being written
 
-        if item in register.integers_dict.keys() and register.integers_dict[item] != None:
-          self.source = self.source.replace(item, str(register.integers_dict[item]))
+      if item in register.integers_dict.keys() and register.integers_dict[item] != None:
+        self.source = self.source.replace(item, str(register.integers_dict[item]))
         
-        elif item in register.chars_dict and register.chars_dict[item] != None:
-          self.source = self.source.replace(item, str(register.chars_dict[item]))
+      elif item in register.chars_dict and register.chars_dict[item] != None:
+        self.source = self.source.replace(item, str(register.chars_dict[item]))
 
-        elif item in register.words_dict and register.words_dict[item] != None:
-          self.source = self.source.replace(item, str(register.words_dict[item]))
+      elif item in register.words_dict and register.words_dict[item] != None:
+        self.source = self.source.replace(item, str(register.words_dict[item]))
 
-        elif item in register.longs_dict and register.longs_dict[item] != None:
-          self.source = self.source.replace(item, str(regsiter.longs_dict[item]))
+      elif item in register.longs_dict and register.longs_dict[item] != None:
+        self.source = self.source.replace(item, str(regsiter.longs_dict[item]))
 
-        elif item in register.floats_dict and register.floats_dict[item] != None:
-          self.source = self.source.replace(item, str(register.floats_dict[item]))
+      elif item in register.floats_dict and register.floats_dict[item] != None:
+        self.source = self.source.replace(item, str(register.floats_dict[item]))
 
-        elif item in register.bytes_dict and register.bytes_dict[item] != None:
-          self.source = self.source.replace(item, str(register.bytes_dict[item]))
+      elif item in register.bytes_dict and register.bytes_dict[item] != None:
+        self.source = self.source.replace(item, str(register.bytes_dict[item]))
 
-      if "DEG(" in self.source:
-        # Splits the source code into every word, identifies where DEG is mentioned, and replaces DEG with the evaluated value
-        if self.verbose:
-          print("\nemulator.py Tokenize.code_generate() DEG detected")
+    if "DEG(" in self.source:
+      # Splits the source code into every word, identifies where DEG is mentioned, and replaces DEG with the evaluated value
+      if self.verbose:
+        print("\nemulator.py Tokenize.code_generate() DEG detected")
 
-        self.calc_clean = calc.clean(self.source, "DEG")
-        self.int_value = self.calc_clean[0]
-        self.command_replace = self.calc_clean[1]
+      self.calc_clean = calc.clean(self.source, "DEG")
+      self.int_value = self.calc_clean[0]
+      self.command_replace = self.calc_clean[1]
 
-        if self.verbose:
-          print(f"\nemulator.py Tokenize.code_generate() self.int_value: {self.int_value}")
+      if self.verbose:
+        print(f"\nemulator.py Tokenize.code_generate() self.int_value: {self.int_value}")
 
-        self.degree_value = calc.deg(self.int_value)
-        self.source = self.source.replace(self.command_replace, str(self.degree_value))
+      self.degree_value = calc.deg(self.int_value)
+      self.source = self.source.replace(self.command_replace, str(self.degree_value))
 
-        if self.verbose:
-          print(self.source)
+      if self.verbose:
+        print(self.source)
 
-      if "RAD(" in self.source:
-        # Splits the source code into every word, identifies where RAD is mentioned, and replaces RAD with the evaluated value
-        if self.verbose:
-          print("\nemulator.py Tokenize.code_generate() RAD detected")
+    if "RAD(" in self.source:
+      # Splits the source code into every word, identifies where RAD is mentioned, and replaces RAD with the evaluated value
+      if self.verbose:
+        print("\nemulator.py Tokenize.code_generate() RAD detected")
           
-        self.calc_clean = calc.clean(self.source, "RAD")
-        self.int_value = self.calc_clean[0]
-        self.command_replace = self.calc_clean[1]
+      self.calc_clean = calc.clean(self.source, "RAD")
+      self.int_value = self.calc_clean[0]
+      self.command_replace = self.calc_clean[1]
 
-        if self.verbose:
-          print(f"\nemulator.py Tokenize.code_generate() self.int_value: {self.int_value}")
+      if self.verbose:
+        print(f"\nemulator.py Tokenize.code_generate() self.int_value: {self.int_value}")
 
-        self.rad_value = calc.rad(self.int_value)
-        self.source = self.source.replace(self.command_replace, str(self.rad_value))
+      self.rad_value = calc.rad(self.int_value)
+      self.source = self.source.replace(self.command_replace, str(self.rad_value))
 
-        if self.verbose:
-          print(self.source)
+      if self.verbose:
+        print(self.source)
 
-      if "SIN(" in self.source:
-        # Splits the source code into every word, identifies where SIN is mentioned, and replaces SIN with the evaluated value
-        if self.verbose:
-          print("\nemulator.py Tokenize.code_generate() SIN detected")
+    if "SIN(" in self.source:
+      # Splits the source code into every word, identifies where SIN is mentioned, and replaces SIN with the evaluated value
+      if self.verbose:
+        print("\nemulator.py Tokenize.code_generate() SIN detected")
 
-        self.calc_clean = calc.clean(self.source, "SIN")
-        self.int_value = self.calc_clean[0]
-        self.command_replace = self.calc_clean[1]
+      self.calc_clean = calc.clean(self.source, "SIN")
+      self.int_value = self.calc_clean[0]
+      self.command_replace = self.calc_clean[1]
 
-        if self.verbose:
-          print(f"\nemulator.py Tokenize.code_generate self.int_value: {self.int_value}")
+      if self.verbose:
+        print(f"\nemulator.py Tokenize.code_generate self.int_value: {self.int_value}")
 
-        self.sin_value = calc.sin(self.int_value)
-        self.source = self.source.replace(self.command_replace, str(self.rad_value))
+      self.sin_value = calc.sin(self.int_value)
+      self.source = self.source.replace(self.command_replace, str(self.rad_value))
 
-      if "ABS(" in self.source:
-        # Splits the source code into every word, identifies where ABS is mentioned, and replaces ABS with the evaluated value
-        if self.verbose:
-          print(f"\nemulator.py Tokenize.code_generate() ABS detected")
+    if "ABS(" in self.source:
+      # Splits the source code into every word, identifies where ABS is mentioned, and replaces ABS with the evaluated value
+      if self.verbose:
+        print(f"\nemulator.py Tokenize.code_generate() ABS detected")
 
-        self.calc_clean = calc.clean(self.source, "ABS")
-        self.int_value = self.calc_clean[0]
-        self.command_replace = self.calc_clean[1]
+      self.calc_clean = calc.clean(self.source, "ABS")
+      self.int_value = self.calc_clean[0]
+      self.command_replace = self.calc_clean[1]
 
-        if self.verbose:
-          print(f"\nemulator.py Tokenize.code_generate self.int_value: {self.int_value}")
+      if self.verbose:
+        print(f"\nemulator.py Tokenize.code_generate self.int_value: {self.int_value}")
 
-        self.abs_value = calc.abs(self.int_value)
-        self.source = self.source.replace(self.command_replace, str(self.abs_value))
+      self.abs_value = calc.abs(self.int_value)
+      self.source = self.source.replace(self.command_replace, str(self.abs_value))
 
     if "INPUT " in self.source:
       # Finds the text shown to the user and the variable the user input will be stored in
@@ -516,6 +515,26 @@ for line in user_code:
 
   if "FOR " in line:
     for_loop_write = True
+
+    # Allows for variables to be replaced in for loop statements
+    for item in line.split(" "):
+      if item in register.integers_dict.keys() and register.integers_dict[item] != None:
+        line = line.replace(item, str(register.integers_dict[item]))
+
+      elif item in register.chars_dict.keys() and register.chars_dict[item] != None:
+        line = line.replace(item, str(register.chars_dict[item]))
+
+      elif item in register.words_dict.keys() and register.words_dict[item] != None:
+        line = line.replace(item, str(register.words_dict[item]))
+
+      elif item in register.longs_dict.keys() and register.longs_dict[item] != None:
+        line = line.replace(item, str(register.longs_dict[item]))
+
+      elif item in register.floats_dict.keys() and register.floats_dict[item] != None:
+        line = line.replace(item, str(register.floats_dict[item]))
+
+      elif item in register.bytes_dict.keys() and register.bytes_dict[item] != None:
+        line = line.replace(item, str(register.bytes_dict[item]))
 
     # Extracts when the for loop should stop
     if verbose:
