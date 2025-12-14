@@ -1,0 +1,3 @@
+PLOT 0,0
+PLOT 10,10
+NEXT
