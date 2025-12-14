@@ -1,9 +1,0 @@
-INTEGER A
-INTEGER B
-
-A = 1
-B = 2
-
-FOR i = 2 TO 10
-PRINT i
-NEXT
